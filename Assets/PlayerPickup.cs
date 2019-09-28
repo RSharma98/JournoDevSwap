@@ -45,9 +45,9 @@ public class PlayerPickup : MonoBehaviour
 		Collider closestPickup = null;
 		float dist = Mathf.Infinity;
 		for (int i = 0; i < pickups.Length; i++) {
-			if (Vector3.Distance(transform.position - (transform.position - pickupOffset.position), pickups[i].transform.position) < dist) {
+			if (Vector3.Distance(transform.position, pickups[i].transform.position) < dist) {
 				closestPickup = pickups[i];
-				dist = Vector3.Distance(transform.position - (transform.position - pickupOffset.position), pickups[i].transform.position);
+				dist = Vector3.Distance(transform.position, pickups[i].transform.position);
 				Debug.Log("Distance: " + dist);
 			}
 		}
