@@ -21,4 +21,6 @@ public class Pickup : MonoBehaviour
 		transform.position = startPosition;
 		transform.rotation = startRotation;
 	}
+
+	public string GetMissionText => missionText;
 }

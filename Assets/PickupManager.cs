@@ -1,6 +1,7 @@
 ﻿ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PickupManager : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class PickupManager : MonoBehaviour
 	public Vector3 dropoffPosition;
 	public float dropoffRange;
 	public LayerMask pickupLayer;
+
+	public Text missionText;
 
 	public static PickupManager instance;
 	private void Awake()
@@ -59,6 +62,7 @@ public class PickupManager : MonoBehaviour
 		int i = Random.Range(0, pickups.Length - 1);
 		currentTarget = pickups[i];
 		Debug.Log("Current Target: " + currentTarget.name);
+		missionText.text = currentTarget.GetComponent<Pickup>().GetMissionText;
 		checkItemsInRange = true;
 		yield return null;
 	}
