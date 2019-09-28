@@ -18,8 +18,12 @@ public class PickupManager : MonoBehaviour
 
 	public Text missionText;
 
+	public ParticleSystem particleEffects;
 	public int turnsBeforeRandomisation;
 	private int currentTurn;
+
+	private bool startedDarkness;
+	private bool playedParticles;
 
 	[System.Serializable]
 	public class RandomArea {
@@ -46,6 +50,8 @@ public class PickupManager : MonoBehaviour
 		currentTarget = null;
 		collectedItem = true;
 		currentTurn = 0;
+		startedDarkness = false;
+		playedParticles = false;
 		alphabet = "abcdefghijklmnopqrstuvwxyz1234567890!£$%^&*()@#~?";
 	}
 
@@ -65,9 +71,13 @@ public class PickupManager : MonoBehaviour
 						if (col.gameObject.Equals(currentTarget)) {
 							missionText.text = "THAT'S IT!";
 							collectedItem = true;
+							if (!playedParticles) StartCoroutine(PlayParticles());
 						} else missionText.text = "That's not right. " + currentTarget.GetComponent<Pickup>().GetMissionText;
-						if (currentTurn <= turnsBeforeRandomisation) col.gameObject.GetComponent<Pickup>().Reset();
-						else RandomisePickups();
+
+						if (currentTurn <= turnsBeforeRandomisation) {
+							col.gameObject.GetComponent<Pickup>().Reset();
+							//if(!startedDarkness) StartCoroutine(DarknessEffect());
+						} else RandomisePickups();
 					}
 				}
 			}
@@ -77,13 +87,20 @@ public class PickupManager : MonoBehaviour
 	IEnumerator PickItem() {
 		collectedItem = checkItemsInRange = false;
 		yield return new WaitForSeconds(5.0f);
-		int i = Random.Range(0, pickups.Length - 1);
+		int i = Random.Range(0, pickups.Length);
 		currentTarget = pickups[i];
 		currentTurn++;
 		Debug.Log("Current Target: " + currentTarget.name);
 		missionText.text = currentTarget.GetComponent<Pickup>().GetMissionText;
 		checkItemsInRange = true;
 		yield return null;
+	}
+
+	IEnumerator PlayParticles() {
+		particleEffects.Play();
+		playedParticles = true;
+		yield return new WaitForSeconds(6.0f);
+		playedParticles = false;
 	}
 
 	//This function will randomise the position of all pickups
@@ -99,7 +116,7 @@ public class PickupManager : MonoBehaviour
 		}
 
 		for (int i = 0; i < pickups.Length; i++) {
-			int r = Random.Range(0, randomAreas.Length - 1);
+			int r = Random.Range(0, randomAreas.Length);
 			RandomArea area = randomAreas[r];
 			Vector3 pos = Vector3.zero;
 			pos.x = Random.Range(area.position.x - (area.size.x / 2.0f), area.position.x + (area.size.x / 2.0f));
@@ -107,6 +124,12 @@ public class PickupManager : MonoBehaviour
 			pos.z = Random.Range(area.position.z - (area.size.z / 2.0f), area.position.z + (area.size.z / 2.0f));
 			pickups[i].transform.position = pos;
 		}
+	}
+
+	private IEnumerator DarknessEffect() {
+		startedDarkness = true;
+		Camera cam = Camera.main;
+		yield return null;
 	}
 
 	private void OnDrawGizmos()
