@@ -58,6 +58,6 @@ public class PlayerPickup : MonoBehaviour
 	private void OnDrawGizmos()
 	{
 		Gizmos.color = new Color(0, 1, 0, 0.25f);
-		Gizmos.DrawSphere(transform.position - (transform.position - pickupOffset.position), pickupRange);
+		Gizmos.DrawWireSphere(transform.position - (transform.position - pickupOffset.position), pickupRange);
 	}
 }

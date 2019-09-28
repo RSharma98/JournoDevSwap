@@ -8,6 +8,18 @@ public class PickupManager : MonoBehaviour
 	private GameObject[] pickups;
 	private GameObject currentTarget;
 	private bool collectedItem;
+	private bool checkItemsInRange;
+
+	public Vector3 dropoffPosition;
+	public float dropoffRange;
+	public LayerMask pickupLayer;
+
+	public static PickupManager instance;
+	private void Awake()
+	{
+		if (instance == null) instance = this;
+		else Destroy(this);
+	}
 
 	// Start is called before the first frame update
 	void Start()
@@ -25,17 +37,35 @@ public class PickupManager : MonoBehaviour
 		{
 			StartCoroutine(PickItem());
 		}
-		else { 
-			
+		else if(checkItemsInRange) {
+			Collider[] pickupsInRange = Physics.OverlapSphere(dropoffPosition, dropoffRange, pickupLayer);
+			if (pickupsInRange.Length > 0) {
+				foreach (Collider col in pickupsInRange) {
+					if (col.transform.parent == null) {
+						if (col.gameObject.Equals(currentTarget)) {
+							Debug.Log("Correct Item attained");
+							collectedItem = true;
+						} else Debug.Log("That's the wrong item");
+						col.gameObject.GetComponent<Pickup>().Reset();
+					}
+				}
+			}
 		}
 	}
 
 	IEnumerator PickItem() {
-		collectedItem = false;
-		yield return new WaitForSeconds(5f);
+		collectedItem = checkItemsInRange = false;
+		yield return new WaitForSeconds(5.0f);
 		int i = Random.Range(0, pickups.Length - 1);
 		currentTarget = pickups[i];
 		Debug.Log("Current Target: " + currentTarget.name);
+		checkItemsInRange = true;
 		yield return null;
+	}
+
+	private void OnDrawGizmos()
+	{
+		Gizmos.color = new Color(1, 1, 0, 0.3f);
+		Gizmos.DrawSphere(dropoffPosition, dropoffRange);
 	}
 }
