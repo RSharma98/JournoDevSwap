@@ -24,6 +24,7 @@ public class PickupManager : MonoBehaviour
 
 	private bool startedDarkness;
 	private bool playedParticles;
+	private bool startedTextEffect;
 
 	[System.Serializable]
 	public class RandomArea {
@@ -52,6 +53,7 @@ public class PickupManager : MonoBehaviour
 		currentTurn = 0;
 		startedDarkness = false;
 		playedParticles = false;
+		startedTextEffect = false;
 		alphabet = "abcdefghijklmnopqrstuvwxyz1234567890!£$%^&*()@#~?";
 	}
 
@@ -74,10 +76,16 @@ public class PickupManager : MonoBehaviour
 							if (!playedParticles) StartCoroutine(PlayParticles());
 						} else missionText.text = "That's not right. " + currentTarget.GetComponent<Pickup>().GetMissionText;
 
-						if (currentTurn <= turnsBeforeRandomisation) {
+						if (currentTurn <= turnsBeforeRandomisation)
+						{
 							col.gameObject.GetComponent<Pickup>().Reset();
 							//if(!startedDarkness) StartCoroutine(DarknessEffect());
-						} else RandomisePickups();
+						}
+						else
+						{
+							RandomisePickups();
+							if (!startedTextEffect) StartCoroutine(TextEffect());
+						}
 					}
 				}
 			}
@@ -105,16 +113,6 @@ public class PickupManager : MonoBehaviour
 
 	//This function will randomise the position of all pickups
 	private void RandomisePickups() {
-		for (int i = 0; i < roomTexts.Length; i++) {
-			int length = Random.Range(6, 15);
-			char[] newText = new char[length];
-			for (int j = 0; j < length; j++) {
-				int a = Random.Range(0, alphabet.Length - 1);
-				newText[j] = alphabet[a];
-			}
-			roomTexts[i].SetCharArray(newText, 0, newText.Length - 1);
-		}
-
 		for (int i = 0; i < pickups.Length; i++) {
 			int r = Random.Range(0, randomAreas.Length);
 			RandomArea area = randomAreas[r];
@@ -123,6 +121,24 @@ public class PickupManager : MonoBehaviour
 			pos.y = Random.Range(area.position.y - (area.size.y / 2.0f), area.position.y + (area.size.y / 2.0f));
 			pos.z = Random.Range(area.position.z - (area.size.z / 2.0f), area.position.z + (area.size.z / 2.0f));
 			pickups[i].transform.position = pos;
+		}
+	}
+
+	IEnumerator TextEffect() {
+		startedTextEffect = true;
+		int i = 0;
+		while (true) {
+			int length = Random.Range(6, 15);
+			char[] newText = new char[length];
+			for (int j = 0; j < length; j++)
+			{
+				int a = Random.Range(0, alphabet.Length - 1);
+				newText[j] = alphabet[a];
+			}
+			roomTexts[i].SetCharArray(newText, 0, newText.Length - 1);
+			i++;
+			if (i > roomTexts.Length - 1) i = 0;
+			yield return new WaitForSeconds(0.1f);
 		}
 	}
 

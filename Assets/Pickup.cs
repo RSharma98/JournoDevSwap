@@ -22,5 +22,12 @@ public class Pickup : MonoBehaviour
 		transform.rotation = startRotation;
 	}
 
+	public void Update()
+	{
+		if (transform.parent == null) {
+			transform.Rotate(0, 1, 0, Space.World);
+		}
+	}
+
 	public string GetMissionText => missionText;
 }
