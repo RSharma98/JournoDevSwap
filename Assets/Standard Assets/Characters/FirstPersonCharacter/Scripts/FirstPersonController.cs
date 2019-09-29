@@ -38,8 +38,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float m_NextStep;
         private bool m_Jumping;
 
-        // Use this for initialization
-        private void Start()
+		public static FirstPersonController instance;
+		private void Awake()
+		{
+			if (instance == null) instance = this;
+			else Destroy(this);
+		}
+
+		// Use this for initialization
+		private void Start()
         {
             m_CharacterController = GetComponent<CharacterController>();
             m_Camera = Camera.main;
@@ -213,5 +220,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
             body.AddForceAtPosition(m_CharacterController.velocity*0.1f, hit.point, ForceMode.Impulse);
         }
-    }
+
+		public void SetPlayerSpeed(float newSpeed)
+		{
+			m_WalkSpeed = newSpeed;
+			m_RunSpeed = newSpeed;
+		}
+
+		public void EnableMouse() {
+			m_MouseLook.lockCursor = true;
+			m_MouseLook.YSensitivity = 4;
+		}
+	}
 }

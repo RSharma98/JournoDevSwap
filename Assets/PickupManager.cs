@@ -22,6 +22,21 @@ public class PickupManager : MonoBehaviour
 	public int turnsBeforeRandomisation;
 	private int currentTurn;
 
+	public int turnsBeforeSlowingPlayer;
+	public float slowedDownPlayerSpeed;
+
+	public int turnsBeforeTimer;
+	public float maxTimer;
+	public Text timerText;
+	private float timeRemaining;
+	private bool startedTimer;
+	private bool pauseTimer;
+
+	public int turnsBeforeEnd;
+	public Image endScreen;
+	public Text endScreenText;
+	public Button endScreenButton;
+
 	private bool startedDarkness;
 	private bool playedParticles;
 	private bool startedTextEffect;
@@ -54,6 +69,12 @@ public class PickupManager : MonoBehaviour
 		startedDarkness = false;
 		playedParticles = false;
 		startedTextEffect = false;
+		startedTimer = false;
+		pauseTimer = false;
+		endScreen.enabled = false;
+		endScreenText.enabled = false;
+		endScreenButton.gameObject.SetActive(false);
+		timeRemaining = maxTimer;
 		alphabet = "abcdefghijklmnopqrstuvwxyz1234567890!£$%^&*()@#~?";
 	}
 
@@ -63,7 +84,7 @@ public class PickupManager : MonoBehaviour
 	{
 		if (collectedItem)
 		{
-			StartCoroutine(PickItem());
+			StartCoroutine(PickItem(3.0f));
 		}
 		else if(checkItemsInRange) {
 			Collider[] pickupsInRange = Physics.OverlapSphere(dropoffPosition, dropoffRange, pickupLayer);
@@ -76,32 +97,76 @@ public class PickupManager : MonoBehaviour
 							if (!playedParticles) StartCoroutine(PlayParticles());
 						} else missionText.text = "That's not right. " + currentTarget.GetComponent<Pickup>().GetMissionText;
 
-						if (currentTurn <= turnsBeforeRandomisation)
+						if (currentTurn < turnsBeforeRandomisation)
 						{
 							col.gameObject.GetComponent<Pickup>().Reset();
-							//if(!startedDarkness) StartCoroutine(DarknessEffect());
 						}
 						else
 						{
 							RandomisePickups();
 							if (!startedTextEffect) StartCoroutine(TextEffect());
+							if (!startedDarkness) StartCoroutine(DarknessEffect());
+
+							if (currentTurn >= turnsBeforeTimer) {
+								startedTimer = true;
+								pauseTimer = true;
+							}
+
+							if (currentTurn >= turnsBeforeSlowingPlayer) {
+							UnityStandardAssets.Characters.FirstPerson.FirstPersonController.instance.SetPlayerSpeed(slowedDownPlayerSpeed);
+							}
+
+							if (currentTurn >= turnsBeforeEnd) {
+								StartCoroutine(FadeInEndScreen());
+							}
 						}
 					}
 				}
 			}
 		}
+
+		if (startedTimer) {
+			if(!pauseTimer) timeRemaining -= Time.deltaTime;
+			if (timeRemaining <= 0) {
+				RandomisePickups();
+				StartCoroutine(PickItem(0.0f));
+				timeRemaining = maxTimer;
+			}
+			string textForTimer = timeRemaining < 10.0f ? timeRemaining.ToString("F1") : timeRemaining.ToString("F0");
+			timerText.text = textForTimer;
+		}
 	}
 
-	IEnumerator PickItem() {
+	IEnumerator PickItem(float timeToWait) {
 		collectedItem = checkItemsInRange = false;
-		yield return new WaitForSeconds(5.0f);
+		yield return new WaitForSeconds(timeToWait);
 		int i = Random.Range(0, pickups.Length);
 		currentTarget = pickups[i];
 		currentTurn++;
 		Debug.Log("Current Target: " + currentTarget.name);
 		missionText.text = currentTarget.GetComponent<Pickup>().GetMissionText;
 		checkItemsInRange = true;
-		yield return null;
+		pauseTimer = false;
+		timeRemaining = maxTimer;
+	}
+
+	IEnumerator FadeInEndScreen() {
+		endScreen.enabled = true;
+		endScreenText.enabled = true;
+		float alpha = 0;
+		while (alpha < 1) {
+			Color endScreenColour = endScreen.color;
+			endScreenColour.a = alpha;
+			endScreen.color = endScreenColour;
+
+			Color endTextColour = endScreenText.color;
+			endTextColour.a = alpha;
+			endScreenText.color = endTextColour;
+
+			alpha += Time.deltaTime;
+			yield return null;
+		}
+		endScreenButton.gameObject.SetActive(true);
 	}
 
 	IEnumerator PlayParticles() {
@@ -145,7 +210,15 @@ public class PickupManager : MonoBehaviour
 	private IEnumerator DarknessEffect() {
 		startedDarkness = true;
 		Camera cam = Camera.main;
-		yield return null;
+		Color blackColour = new Color(0.1f, 0.1f, 0.1f);
+		while (cam.backgroundColor != blackColour) {
+			Color camColor = cam.backgroundColor;
+			camColor.r = Mathf.MoveTowards(camColor.r, blackColour.r, Time.deltaTime);
+			camColor.g = Mathf.MoveTowards(camColor.g, blackColour.g, Time.deltaTime);
+			camColor.b = Mathf.MoveTowards(camColor.b, blackColour.b, Time.deltaTime);
+			cam.backgroundColor = camColor;
+			yield return null;
+		}
 	}
 
 	private void OnDrawGizmos()
