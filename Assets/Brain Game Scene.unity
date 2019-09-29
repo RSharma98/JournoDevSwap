@@ -39012,13 +39012,13 @@ MonoBehaviour:
     m_Bits: 256
   missionText: {fileID: 522293678}
   particleEffects: {fileID: 196680371}
-  turnsBeforeRandomisation: 0
+  turnsBeforeRandomisation: 5
   turnsBeforeSlowingPlayer: 12
   slowedDownPlayerSpeed: 5.2
   turnsBeforeTimer: 8
   maxTimer: 25
   timerText: {fileID: 221896361}
-  turnsBeforeEnd: 0
+  turnsBeforeEnd: 15
   endScreen: {fileID: 2043816352}
   endScreenText: {fileID: 1723994493}
   endScreenButton: {fileID: 104785479}
